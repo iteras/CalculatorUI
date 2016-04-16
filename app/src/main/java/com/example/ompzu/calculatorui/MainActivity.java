@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
     public void broadcastIntent(ArrayList<String> str){
         Intent intent = new Intent("CustomBroadcast");
         intent.putExtra("result", str);
-        intent.setAction("com.SEND_RESULT");
+        intent.setAction("com.SEND_RESULT_FROM_BRAIN");
         if(BuildConfig.DEBUG){
             Log.d(TAG, "Broadcast intent sent with content: " + input.toString());
         }
@@ -167,6 +167,7 @@ public class MainActivity extends AppCompatActivity {
             if (btnId.equals("E") || (btnId.equals("P") || btnId.equals("M") || btnId.equals("X") || btnId.equals("D") ||
                     btnId.equals("W") || btnId.equals("N") || btnId.equals("S") && input.size() > 2)) { //lets continue calculate w/o pressing "=" but any other
                 //operation button
+
                 if (!btnId.equals("E")) {
 
                     //nr = ""; //seesms it is not used

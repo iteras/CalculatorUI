@@ -18,11 +18,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver android:name=".UIReceiver"
+        <receiver android:name="com.example.ompzu.calculatorui.UIReceiver"
             android:exported="true">
 
             <intent-filter>
-                <action android:name="com.example.ompzu.RECEIVE_RESULT"></action>
+                <action android:name="com.SEND_RESULT"></action>
             </intent-filter>
         </receiver>
     </application>
