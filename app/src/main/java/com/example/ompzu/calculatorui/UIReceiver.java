@@ -19,12 +19,13 @@ public class UIReceiver extends BroadcastReceiver {
 
     public void onReceive(Context ctx, Intent i){
     Bundle extras = i.getExtras();
-    ArrayList<String> debuggable = new ArrayList<String>();
+    //ArrayList<String> debuggable = new ArrayList<String>();
+        String debuggable = "";
     if (extras != null){
-        debuggable.add(extras.toString());
+        debuggable = extras.getString("result");
         MainActivity.saveInput(debuggable);
     }
-    Toast.makeText(ctx,"Intent received " + debuggable, Toast.LENGTH_SHORT ).show();
+    Toast.makeText(ctx,TAG + " Intent received " + debuggable, Toast.LENGTH_LONG ).show();
     if(BuildConfig.DEBUG){
         Log.d(TAG, "Broadcast UI onReceive " +  debuggable);
         if(debuggable.isEmpty()){

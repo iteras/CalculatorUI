@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 public class MainActivity extends AppCompatActivity {
     private static ArrayList<String> input = new ArrayList<String>(); //consists of 2 numbers and operation( [1,P,99] is 1 + 99
@@ -21,13 +22,40 @@ public class MainActivity extends AppCompatActivity {
     private static ArrayList<String> inputFromReceiver = new ArrayList<String>();
     private static boolean inputReceived = false;
 
+    public static ArrayList<String> clearInput(String str){
+        int length = str.length();
+        StringTokenizer st = new StringTokenizer(str, "[], ");
+        String s = "";
+        while(st.hasMoreTokens()){
+            s = st.nextToken();
+            input.add(s);
+            Log.d(TAG, "Tokens are " + s);
+        }
+        //input.add(s);
+        Log.d(TAG, "Last token is " + s);
+        return input;
 
-    public static void saveInput (ArrayList<String> str){
+    }
+
+    public static void saveInput (String str){
+        ArrayList<String> in = new ArrayList<String>();
+        in = clearInput(str); // string to arraylist
+        //btnId = str.substring(str.length()-1);
+        input = in; //input is now our string from broadcasted UI
+        //input.remove(2); //remove last cuz its gonna be added later
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "Input saved, new btnId value is: " + input.toString());
+        }
+        //work(btnId);
+
+        //new MainActivity().work(btnId);
         if(BuildConfig.DEBUG){
             Log.d(TAG, "Broadcast received intent saved as: " + str.toString());
         }
-        input = str;
+        /*input = str;
         inputReceived = true;
+      */
+
     }
 
     @Override
@@ -39,6 +67,9 @@ public class MainActivity extends AppCompatActivity {
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "onCreate called");
         }
+        if(!btnId.isEmpty()){
+            work(btnId);
+        }
     }
 
     public void buttonClicked(View view){
@@ -48,82 +79,107 @@ public class MainActivity extends AppCompatActivity {
         if(BuildConfig.DEBUG){
             Log.d(TAG, "Button clicked:" + btnId);
         }
-        display(btnId);
+        work(btnId);
     }
 
 
     //broadcasting out
     public void broadcastIntent(ArrayList<String> str){
-        Intent intent = new Intent("CustomBroadcast");
-        intent.putExtra("result", str);
-        intent.setAction("com.SEND_RESULT_FROM_BRAIN");
-        if(BuildConfig.DEBUG){
-            Log.d(TAG, "Broadcast intent sent with content: " + input.toString());
+        if(str.size() == 3) {
+            Intent intent = new Intent("CustomBroadcast");
+            String s = "";
+/*
+            String[] strArr = new String[3]; //parsing ArrayList to str Array for sending broadcast
+            for (int i = 0; i < 3; i++) {
+                strArr[i] = str.get(i);
+            }
+            */
+            s = str.toString();
+
+            intent.setAction("com.SEND_RESULT_FROM_BRAIN");
+            intent.putExtra("input", s);
+            intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+            if (BuildConfig.DEBUG) {
+                /*String[] strCheck = new String[strArr.length];
+                for(int i = 0; i < strArr.length; i++){
+                    strCheck = intent.getStringArrayExtra("result");
+                }
+                */
+                Log.d(TAG, "Broadcast intent sent with content: " + intent.getStringExtra("input"));
+                Log.d(TAG, str.toString());
+            }
+            Log.d(TAG, "before sending");
+            sendBroadcast(intent);
+            Log.d(TAG, "after sending");
+        }else{
+                if (BuildConfig.DEBUG) {
+                    Log.d(TAG, "Broadcast not sent, because string length was only " + str.size() + "!");
+                }
+                return;
+            }
         }
-        sendBroadcast(intent);
 
-    }
 
-       public void display(String in) {
-           if(in.length() > 0){ //if received sentence has something then it will be our input
+       public void work(String in) {
+           if (in.length() > 0) { //if received sentence has something then it will be our input
                btnId = in;
            }
 
-        if (btnId.equals("E")) { //input is equals
-            if (!nr.isEmpty()) {
-                input.add(nr);  //operation inserted, finsih the nr, add to arraylist and clean the string
-            } else {
-                nr = "";//remove number from memory
-            }
-        }
-        if (!btnId.equals("P") && !btnId.equals("M") && !btnId.equals("X") &&
-                !btnId.equals("D") && !btnId.equals("C") && !btnId.equals("E") &&
-                !btnId.equals("W") && !btnId.equals("N") && !btnId.equals("S")) { //input is number
-            if (btnId.equals("K") && !nr.contains(".")) { //inserts Coma to string
-                btnId = ".";
-                nr = nr + btnId;
-                showEquation = showEquation + btnId;
-            } else if (!btnId.equals("K")) {
-                if (btnId.equals("0") && !nr.equals("0")) {
-                    nr = nr + btnId; //click 7 nr is 7, click 4 and nr is 74, click 1 nr is 741
-                    showEquation = showEquation + btnId;
-                } else {
-                    nr = nr + btnId; //click 7 nr is 7, click 4 and nr is 74, click 1 nr is 741
-                    showEquation = showEquation + btnId;
-                }
-            }
-        }
+           if (btnId.equals("E")) { //input is equals
+               if (!nr.isEmpty()) {
+                   input.add(nr);  //operation inserted, finsih the nr, add to arraylist and clean the string
+               } else {
+                   nr = "";//remove number from memory
+               }
+           }
+           if (!btnId.equals("P") && !btnId.equals("M") && !btnId.equals("X") &&
+                   !btnId.equals("D") && !btnId.equals("C") && !btnId.equals("E") &&
+                   !btnId.equals("W") && !btnId.equals("N") && !btnId.equals("S")) { //input is number
+               if (btnId.equals("K") && !nr.contains(".")) { //inserts Coma to string
+                   btnId = ".";
+                   nr = nr + btnId;
+                   showEquation = showEquation + btnId;
+               } else if (!btnId.equals("K")) {
+                   if (btnId.equals("0") && !nr.equals("0")) {
+                       nr = nr + btnId; //click 7 nr is 7, click 4 and nr is 74, click 1 nr is 741
+                       showEquation = showEquation + btnId;
+                   } else {
+                       nr = nr + btnId; //click 7 nr is 7, click 4 and nr is 74, click 1 nr is 741
+                       showEquation = showEquation + btnId;
+                   }
+               }
+           }
 
-        if (btnId.equals("P") || btnId.equals("M") || btnId.equals("X") || btnId.equals("D") ||
-                btnId.equals("W") || btnId.equals("N") || btnId.equals("S")) { //input is operation
-            if (!nr.isEmpty()) {
-                input.add(nr); //operation pressed, finsih the nr, add to arraylist and clean the string
-            }
-            if (input.size() == 1) {
-                String inputOP = "";
-                nr = ""; //remove number from memory
-                if(btnId.equals("p")) inputOP = " + ";
-                if(btnId.equals("M")) inputOP = " - ";
-                if(btnId.equals("X")) inputOP = " * ";
-                if(btnId.equals("D")) inputOP = " / ";
-                if(btnId.equals("W")) inputOP = " pow ";
-                if(btnId.equals("N")) inputOP = " sin ";
-                if(btnId.equals("S")) inputOP = " cos ";
-                showEquation = showEquation + inputOP; //displays operation marks
-                input.add(btnId);
-            }
-        }
+           if (btnId.equals("P") || btnId.equals("M") || btnId.equals("X") || btnId.equals("D") ||
+                   btnId.equals("W") || btnId.equals("N") || btnId.equals("S")) { //input is operation
+               if (!nr.isEmpty()) {
+                   input.add(nr); //operation pressed, finsih the nr, add to arraylist and clean the string
+               }
+               if (input.size() == 1) {
+                   String inputOP = "";
+                   nr = ""; //remove number from memory
+                   if (btnId.equals("P")) inputOP = " + ";
+                   if (btnId.equals("M")) inputOP = " - ";
+                   if (btnId.equals("X")) inputOP = " * ";
+                   if (btnId.equals("D")) inputOP = " / ";
+                   if (btnId.equals("W")) inputOP = " pow ";
+                   if (btnId.equals("N")) inputOP = " sin ";
+                   if (btnId.equals("S")) inputOP = " cos ";
+                   showEquation = showEquation + inputOP; //displays operation marks
+                   input.add(btnId);
+               }
+           }
 
-        if (btnId.contains("C")) { //input is Clear function
-            input.clear(); //clean arrayList
-            inputFromReceiver.clear();
-            nr = "";//remove number from memory
-            showResult = ""; //clean display result
-            showEquation = ""; //clean display equation
-            if (BuildConfig.DEBUG) Log.d(TAG, "Array reset: " + input.toString());
-        }
-        int firstOsCheck = 0;
-        int secondOsCheck = 0;
+           if (btnId.contains("C")) { //input is Clear function
+               input.clear(); //clean arrayList
+               inputFromReceiver.clear();
+               nr = "";//remove number from memory
+               showResult = ""; //clean display result
+               showEquation = ""; //clean display equation
+               if (BuildConfig.DEBUG) Log.d(TAG, "Array reset: " + input.toString());
+           }
+           int firstOsCheck = 0;
+           int secondOsCheck = 0;
         /*if(input.size() > 0){
             firstOsCheck = CalcEngine.compare(input.get(0)); //returns 0 if string in arraylist slot equals to operation, else its number
         }
@@ -132,37 +188,47 @@ public class MainActivity extends AppCompatActivity {
             secondOsCheck = CalcEngine.compare(input.get(2)); //returns 0 if string in arraylist slot equals to operation, else its number
         }
 */
-        if (input.size() >= 3 && firstOsCheck != 0 && secondOsCheck != 0
-                && (input.contains("P") || input.contains("M") || input.contains("X") ||
-                input.contains("D") || input.contains("W"))) {
-            broadcastIntent(input); //out goes 2 numbers and 1 operation
-            if (inputReceived != false){ //if successfully received something then
-                inputFromReceiver = input; //save it
-            }
+           if (input.size() >= 3 && firstOsCheck != 0 && secondOsCheck != 0
+                   && (input.contains("P") || input.contains("M") || input.contains("X") ||
+                   input.contains("D") || input.contains("W"))) {
+               /*
+               Log.d(TAG, "Broadcast intent should be sent!");
+               broadcastIntent(input); //out goes 2 numbers and 1 operation
+               */
+               if (inputReceived != false) { //if successfully received something then
+                   inputFromReceiver = input; //save it
+               }
 /*
             input = CalcEngine.operation(input); //the operation will be done and equation will be calculated
             */
-            if(input.size() == 1){
+               Log.d(TAG, "Broadcast intent should be sent!");
+               broadcastIntent(input); //out goes 2 numbers and 1 operation
+               if (input.size() == 1) {
 
-            //TODO
-                showResult = inputFromReceiver.get(0);
-            }
-            nr = "";
+                   //TODO
+                   showResult = inputFromReceiver.get(0);
+               }
+               nr = "";
 
-        } else if(input.size() == 2 && (btnId.contains("S") ||btnId.contains("N"))){
-            broadcastIntent(input); //out goes 2 numbers and 1 operation
-            if (inputReceived != false){ //if successfully received something then
-                inputFromReceiver = input; //save it
-            }
-        //    input = CalcEngine.operation(input); //the operation will be done and equation will be calculated
-            nr = "";
-            if(inputFromReceiver.size() == 1){
-                showResult = inputFromReceiver.get(0);
+           } else if (input.size() == 2 && (btnId.contains("S") || btnId.contains("N"))) {
+               broadcastIntent(input); //out goes 2 numbers and 1 operation
+               if (inputReceived != false) { //if successfully received something then
+                   inputFromReceiver = input; //save it
+               }
+               //    input = CalcEngine.operation(input); //the operation will be done and equation will be calculated
+               nr = "";
+               if (inputFromReceiver.size() == 1) {
+                   showResult = inputFromReceiver.get(0);
 
-            }
-        }
+               }
+           }
+           String strToDisplay = btnId;
 
-
+           broadcastIntent(input); //out goes 2 numbers and 1 operation
+           display(strToDisplay);
+       }
+        public void display(String str){
+            btnId = str;
             textViewResult = (TextView) findViewById(R.id.textViewResult);
             if (btnId.equals("E") || (btnId.equals("P") || btnId.equals("M") || btnId.equals("X") || btnId.equals("D") ||
                     btnId.equals("W") || btnId.equals("N") || btnId.equals("S") && input.size() > 2)) { //lets continue calculate w/o pressing "=" but any other

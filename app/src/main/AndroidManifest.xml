@@ -19,7 +19,8 @@
             </intent-filter>
         </activity>
         <receiver android:name="com.example.ompzu.calculatorui.UIReceiver"
-            android:exported="true">
+            android:exported="true"
+            android:enabled ="true">
 
             <intent-filter>
                 <action android:name="com.SEND_RESULT"></action>
